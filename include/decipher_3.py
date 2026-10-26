@@ -1,7 +1,7 @@
 import curses
 import time
 import random
-from .effects import typewriter
+from include.effects import typewriter
 
 WIDTH = 30
 HEIGHT = 16
@@ -97,7 +97,7 @@ def play_round(screen):
         else:
             snake.pop()
 
-def lock3_screen(screen):
+def main(screen):
     try:
         curses.curs_set(0)
     except curses.error:
@@ -134,8 +134,10 @@ def lock3_screen(screen):
                 break
             if key in (ord("q"), ord("Q")):
                 return False
+
 def run_lock3():
-    return curses.wrapper(lock3_screen)
+    return curses.wrapper(main)
+
 if __name__ == "__main__":
     escaped = run_lock3()
     typewriter("You escaped!" if escaped else "The exit is still locked.")

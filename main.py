@@ -1,5 +1,6 @@
 from include.effects import typewriter
 from include.decipher_3 import run_lock3
+from include.decipher_4 import run_lock4
 import time
 import os
 
@@ -17,7 +18,7 @@ while not end:
         "I’ve hidden a way out in the system. \n"
         "First, restore the power. \n"
         "Then, open the drawer to find the control key. \n"
-        "The final lock has a damaged circuit. \n"
+        "The final lock to the corridor has a damaged circuit. \n"
         "Guide the energy snake to collect eight energy points within forty-five seconds to power the exit.”"
     )
     time.sleep(5)
@@ -35,7 +36,11 @@ while not end:
         typewriter("The drawer reveals access to the exit challenge.")
         time.sleep(3)
         os.system("cls" if os.name == "nt" else "clear")
-        if run_lock3():
+    if run_lock3():
+        typewriter("The last challenge is here.")
+        time.sleep(3)
+        os.system("cls" if os.name == "nt" else "clear")
+        if run_lock4():
             typewriter("The exit opens. You win!\n")
             typewriter("If you'd like to restart the game, press L then ENTER to continue...\n")
             typewriter("\nOr you can press another then ENTER to stop the game.\n")
