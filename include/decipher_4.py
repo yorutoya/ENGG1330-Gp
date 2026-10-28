@@ -93,6 +93,3 @@ def run_lock4():
 if __name__ == "__main__":
     escaped = run_lock4()
     typewriter("You escaped!" if escaped else "The exit is still locked.")
-
-
-

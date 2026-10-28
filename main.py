@@ -54,6 +54,3 @@ while not end:
                 end = True
         else:
             typewriter("The exit remains locked.")
-
-
-
