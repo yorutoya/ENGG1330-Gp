@@ -1,7 +1,4 @@
 import curses
-import time
-import random
-from include.effects import typewriter
 
 WIDTH = 30
 HEIGHT = 16
@@ -16,15 +13,14 @@ def make_food(snake):
         for x in range(1, WIDTH - 1)
         if (y, x) not in snake
     ]
-    return random.choice(available)
+    return available[(len(snake) * 37) % len(available)]
 
 def play_round(screen):
     snake = [(8, 10), (8, 9), (8, 8)]
     direction = (0, 1)
     food = make_food(snake)
     score = 0
-    start = time.monotonic()
-    next_move = start + MOVE_INTERVAL
+    ticks = 0
 
     controls = {
         curses.KEY_UP: (-1, 0),
@@ -37,15 +33,22 @@ def play_round(screen):
         ord("d"): (0, 1),
     }
 
-    screen.timeout(20)
+    screen.timeout(160)
 
     while True:
-        now = time.monotonic()
-        remaining = max(0, TIME_LIMIT - (now - start))
+        remaining = max(0, TIME_LIMIT - ticks * MOVE_INTERVAL)
+        rows, cols = screen.getmaxyx()
+        if rows < HEIGHT + 4 or cols < 55:
+            screen.erase()
+            screen.addnstr(0, 0, "Resize to 55 x 20. Q: back", max(0, cols - 1))
+            screen.refresh()
+            if screen.getch() in (ord("q"), ord("Q")):
+                return False, "Quit"
+            continue
         screen.erase()
         screen.addstr(
             0, 0,
-            f"LOCK 3 | Score: {score}/{TARGET} | Time: {remaining:04.1f}s"
+            f"LOCK 3 | Score: {score}/{TARGET} | Energy: {remaining:04.1f}"
         )
         screen.addstr(1, 0, "Press ARROWS or WASD to move | Q to quit")
         for y in range(HEIGHT):
@@ -58,7 +61,7 @@ def play_round(screen):
             screen.addch(y + 3, x, "@" if index == 0 else "o")
         screen.refresh()
         if score >= TARGET:
-            return True, "Exit unlocked!"
+            return True, "Circuit restored!"
         if remaining <= 0:
             return False, "Time is up!"
         proposed = direction
@@ -69,16 +72,12 @@ def play_round(screen):
             candidate = controls[key]
             if candidate != (-direction[0], -direction[1]):
                 proposed = candidate
-        if time.monotonic() < next_move:
-            if proposed != direction:
-                while time.monotonic() < next_move:
-                    key = screen.getch()
-                    if key in (ord("q"), ord("Q")):
-                        return False, "Quit"
-            else:
-                continue
+        # A fixed curses delay keeps movement independent of key repeat.
+        if key != -1:
+            curses.napms(160)
+            curses.flushinp()
+        ticks += 1
         direction = proposed
-        next_move = time.monotonic() + MOVE_INTERVAL
 
         head_y, head_x = snake[0]
         new_head = (head_y + direction[0], head_x + direction[1])
@@ -109,7 +108,7 @@ def main(screen):
         screen.refresh()
         screen.getch()
         return False
-    screen.addstr(0, 0, "LOCK 3: Collect 8 energy points in 45 seconds.")
+    screen.addstr(0, 0, "LOCK 3: Collect 8 points before energy runs out.")
     screen.addstr(2, 0, "Use arrows or WASD. Avoid walls and your body.")
     screen.addstr(4, 0, "Press any key to start.")
     screen.refresh()
@@ -122,7 +121,7 @@ def main(screen):
         screen.erase()
         screen.addstr(0, 0, message)
         if won:
-            screen.addstr(2, 0, "You escaped! Press any key to continue.")
+            screen.addstr(2, 0, "Circuit restored! Press any key to continue.")
             screen.refresh()
             screen.getch()
             return True
@@ -139,5 +138,4 @@ def run_lock3():
     return curses.wrapper(main)
 
 if __name__ == "__main__":
-    escaped = run_lock3()
-    typewriter("You escaped!" if escaped else "The exit is still locked.")
+    run_lock3()

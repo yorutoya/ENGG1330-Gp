@@ -1,5 +1,4 @@
 import curses
-from include.effects import typewriter
 
 MAP = [
     "#########",
@@ -43,7 +42,7 @@ def main(screen):
     player, box, won = START, BOX_START, False
     keys = {
         curses.KEY_UP: (0, -1), curses.KEY_DOWN: (0, 1), curses.KEY_LEFT: (-1, 0), curses.KEY_RIGHT: (1, 0),
-        ord('w'): (0, -1), ord('s'): (-1, 0), ord('a'): (0, 1), ord('d'): (1, 0),
+        ord('w'): (0, -1), ord('s'): (-1, 0), ord('a'): (-1, 0), ord('d'): (1, 0),
     }
     while True:
         screen.erase()
@@ -52,7 +51,7 @@ def main(screen):
             screen.addnstr(0, 0, "Resize to 64 x 18. Q: quit", max(0, width - 1))
             screen.refresh()
             if screen.getch() in (ord('q'), ord('Q')):
-                return
+                return False
             continue
         screen.addstr(1, 2, "Last Step: Open the gate to the ground")
         screen.addstr(3, 2, "Push B onto a, open D, then reach E.")
@@ -68,7 +67,7 @@ def main(screen):
         screen.addstr(11, 2, "@: you | B: box | a: plate | D: door | E: exit")
         screen.addstr(12, 2, "*: box on plate | /: open door")
         if won:
-            screen.addstr(14, 2, "Escaped! R to play again | Q: quit")
+            screen.addstr(14, 2, "Escaped! ENTER: continue | R: replay")
         elif box == PLATE:
             screen.addstr(14, 2, "Door is opened. Walk through / and reach E")
         else:
@@ -76,8 +75,10 @@ def main(screen):
         screen.addstr(16, 2, "Arrows/WASD: move | R:restart | Q:quit")
         screen.refresh()
         key = screen.getch()
+        if won and key in (10, 13, curses.KEY_ENTER):
+            return True
         if key in (ord('Q'), ord('q')):
-            return
+            return False
         if key in (ord('r'), ord('R')):
             player = START
             box = BOX_START
@@ -91,5 +92,5 @@ def run_lock4():
     return curses.wrapper(main)
 
 if __name__ == "__main__":
-    escaped = run_lock4()
-    typewriter("You escaped!" if escaped else "The exit is still locked.")
+    run_lock4()
+
