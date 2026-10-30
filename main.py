@@ -18,8 +18,8 @@ def main(screen):
     except curses.error:
         pass
     selected = 0
-    solved = [False, False]
-    message = "Restore the circuit, then open the evacuation gate."
+    solved = [False, False, False]
+    message = "Unlock the drawer to activate the terminals."
     while True:
         screen.timeout(-1)
         screen.erase()
@@ -32,42 +32,62 @@ def main(screen):
             continue
         put(screen, 1, "UNDERGROUND / EVACUATION CONTROL", curses.A_BOLD)
         put(screen, 3, "Alarm active. Two working terminals stand between you and daylight.")
-        put(screen, 5, "POWER CIRCUIT  --->  SECURITY GATE  --->  SURFACE")
-        put(screen, 6, "Progress: " + " ".join('[OK]' if v else '[--]' for v in solved))
-        labels = ["03  Energy snake / restore circuit", "04  Pressure plate / open gate", "Reset expedition", "Quit"]
+        put(screen, 5, "DRAWER  --->  POWER CIRCUIT  --->  SECURITY GATE")
+        put(screen, 7, "Find the key in the drawer to activate the terminals.")
+        put(screen, 8, "Progress: " + " ".join('[OK]' if v else '[--]' for v in solved))
+        labels = ["02  Unlock the drawer for the key", "03  Energy snake / restore circuit",
+                  "04  Pressure plate / open gate", "Reset expedition", "Quit"]
         for i, label in enumerate(labels):
             suffix = ""
-            if i < 2:
-                suffix = " [COMPLETE]" if solved[i] else (" [LOCKED]" if i == 1 and not solved[0] else " [READY]")
+            if i < 3:
+                suffix = " [COMPLETE]" if solved[i] else (" [LOCKED]" if i > 0 and not solved[i - 1] else " [READY]")
             put(screen, 9 + i, ('> ' if selected == i else '  ') + label + suffix,
                 curses.A_REVERSE if selected == i else 0)
         put(screen, 15, message)
         put(screen, 17, "UP/DOWN or W/S: select | ENTER: interact | Q: quit")
-        put(screen, 19, "Parts 1 and 2 are not supplied yet; this prototype starts at Part 3.")
+        put(screen, 19, "Complete each challenge to unlock the next terminal.")
         screen.refresh()
         key = screen.getch()
         if key in (ord('q'), ord('Q')):
             return
         if key in (curses.KEY_UP, ord('w')):
-            selected = (selected - 1) % 4
+            selected = (selected - 1) % len(labels)
         elif key in (curses.KEY_DOWN, ord('s')):
-            selected = (selected + 1) % 4
+            selected = (selected + 1) % len(labels)
         elif key in (10, 13, curses.KEY_ENTER):
-            if selected == 3:
+            if selected == 4:
                 return
-            if selected == 2:
-                solved = [False, False]
-                message = "Expedition reset. Restore the circuit first."
-            elif selected == 1 and not solved[0]:
-                message = "No power. Complete the energy circuit to unlock this terminal."
+            if selected == 3:
+                solved = [False, False, False]
+                message = "Expedition reset. Unlock the drawer first."
+            elif selected > 0 and not solved[selected - 1]:
+                message = "Complete the previous challenge to unlock this terminal."
             else:
                 screen.erase()
-                result = (circuit if selected == 0 else gate)(screen)
+                try:
+                    if selected == 0:
+                        curses.echo()
+                        try:
+                            curses.curs_set(1)
+                        except curses.error:
+                            pass
+                    result = (keyboard, circuit, gate)[selected](screen)
+                finally:
+                    curses.noecho()
+                    try:
+                        curses.curs_set(0)
+                    except curses.error:
+                        pass
                 screen.timeout(-1)
                 if result:
                     solved[selected] = True
-                    message = "Daylight! Evacuation complete. Reset to start a new expedition." if all(solved) else "Power restored. The security gate terminal is now online."
-                    selected = 1 if not all(solved) else 2
+                    messages = (
+                        "Key acquired. The power circuit terminal is now online.",
+                        "Power restored. The security gate terminal is now online.",
+                        "Daylight! Evacuation complete. Reset to start again.",
+                    )
+                    message = messages[selected]
+                    selected = selected + 1
                 else:
                     message = "Returned to control. Your completed checkpoints are saved this session."
 

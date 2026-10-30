@@ -1,4 +1,7 @@
 # lock2
+# Suggestions: Improve guidance of users to reach the clue "-7", not too simple for the users to decode.
+
+
 import curses
 import time
 
@@ -32,6 +35,7 @@ def main(screen):
         else:
             screen.addstr(11, 2, 'Please enter 1 or 0 only.')
             screen.refresh()
+            screen.clear()
     while True:
         # answer2 = input('Please enter your answer:')
         screen.addstr(14, 2, 'Please enter your answer:')
