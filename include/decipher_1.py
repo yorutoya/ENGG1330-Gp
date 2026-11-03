@@ -1,25 +1,52 @@
-#Suggestions:
-#1. Improve logics for users to reach the alphabet table, not too simple for users to guess, but set a direction of guess for users, that they may not need the alphabet clue to decode.
-#2. Integrate "Curses", may check formats in the main program and other deciphers.
-#3. For reference https://docs.python.org/3/howto/curses.html, or ask for AI-Agents
-#4. Design a new storyboard for Decipher 1, the overall storyboard -> main.py
+# Room 1: decode a mirrored alphabet command to recover the shared cipher offset.
+"""Lock 1: a mirror-alphabet command releases the shared numeric key."""
+from include.interface import read_command, notice
+from include.expedition import lose_cell
 
-print("You are trapped inside a dark vault room.")
-print("A dark control panel displays the following message:")
-print("KIVHH GSV YFGGLM")
-print("You must decode the message and type the correct action to restore the power.\n")
+ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
-failures = 0
 
-while True:
-    player_input = input("Enter your command: ").strip().upper()
+# Map A to Z, B to Y, and so on; preserve spaces and other non-letter characters.
+def mirror(message):
+    result = ''
+    for letter in message.upper():
+        if letter in ALPHABET:
+            position = ALPHABET.index(letter)
+            result += ALPHABET[25 - position]
+        else:
+            result += letter
+    return result
 
-    if player_input == "PRESS THE BUTTON":
-        print("\n>>> BOOM! The lights flicker on and the vault door unlocks. <<<")
-        print("The power has been successfully restored!")
-        break
-    else:
-        failures += 1
-        print("The panel flashes red. Incorrect command.\n")
-        if failures > 5:
-            print("[SYSTEM CLUE]: The alphabet is mirrored: A <-> Z, B <-> Y, C <-> X.\n")
+
+# Check the full command while ignoring letter case and repeated whitespace.
+def check_command(answer):
+    return ' '.join(answer.upper().split()) == 'PRESS THE BUTTON'
+
+
+# Save the offset and return True on success; return False on cancellation or exhausted cells.
+def main(screen, clues):
+    feedback = ''
+    while True:
+        answer = read_command(screen, '01 / MIRROR CONSOLE', clues, [
+            'Emergency lighting is offline. A mirrored panel reads:', '',
+            mirror('PRESS THE BUTTON'), '',
+            'Etched above the panel: A ... Z | Z ... A',
+            'Decode the message and enter the full English command.', '', feedback,
+        ], [
+            ['Read the alphabet from opposite ends: A <-> Z.'],
+            ['B <-> Y, C <-> X. Decode each letter separately.'],
+        ])
+        if answer is None:
+            return False
+        if check_command(answer):
+            clues['shift'] = 7
+            notice(screen, '01 / EMERGENCY LIGHTING RESTORED', clues, [
+                'A service label appears beneath the button:', '',
+                'ENCODER OFFSET: +7. Subtract it when decoding.',
+                'Keep this offset. Gate codes also need drawer badges.', '',
+                'The powered drawer is now available.',
+            ])
+            return True
+        feedback = 'Incorrect command. ' + lose_cell(clues)
+        if clues.get('cells', 3) <= 0:
+            return False
