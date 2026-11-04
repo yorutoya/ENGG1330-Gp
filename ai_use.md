@@ -8,7 +8,7 @@ If no group member used AI, no entries are needed. Otherwise add an entry for ea
 
 - Member and date: Cao Zhiheng, Nov. 3, 2026
 - Tool and model/version, where available: GPT 6 Astra
-- Purpose: Learning the Curse Library ，Detecting Running Environment; Generating Comments for group members and the teaching team to understand; Learning how to format README.md. 
+- Purpose: Brainstorming, Learning the Curse Library ，Detecting Running Environment; Generating Comments for group members and the teaching team to understand; Learning how to format README.md. 
 - Relevant prompts and outputs used, or retained transcript location:
 - Files/materials affected: a) Comments generated: All .py files; b) Curses Reference: CURSES_REFERENCE.md c) Course Container Info and Local Verification Environment: README.md
 - What we kept, changed or rejected: Some inappropriate comments of the program. No modification to the code blocks.
