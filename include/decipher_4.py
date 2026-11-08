@@ -93,7 +93,7 @@ class GatePuzzle:
         dx, dy = direction
         target = (self.player[0] + dx, self.player[1] + dy)
         if not self.walkable(target):
-            return 'Blocked. Place the required crates on matching plates.'
+            return 'Blocked by a wall or closed door. H: how to open the doors.'
         box = None
         for name, position in self.boxes.items():
             if position == target:
@@ -104,7 +104,7 @@ class GatePuzzle:
             if not self.walkable(destination) or destination in self.boxes.values():
                 return 'The crate cannot move there. U: undo a previous move.'
         if target == EXIT and not (self.powered and self.authorized):
-            return 'Exit locked. Verify all terminals in the recovered order.'
+            return 'Exit locked. Keep the plates pressed and unlock all 3 terminals.'
         self.snapshot()
         if box:
             self.boxes[box] = destination
@@ -117,10 +117,10 @@ class GatePuzzle:
         if self.won:
             return 'Exit reached!'
         if self.powered:
-            return 'Gate powered. Proceed to the terminals on the right.'
+            return 'Doors open. Keep the boxes in place. Use terminals 1, 2 and 3.'
         if self.bypass:
-            return 'Battery mode: push A onto a. Plate b is disconnected.'
-        return 'Push A and B onto matching plates a and b. No pulling.'
+            return 'Push box A onto plate a. Box B and plate b are not needed.'
+        return 'Push box A onto a and box B onto b. You cannot pull boxes.'
 
     # Check the nearby terminal code and order; wrong order clears progress, while the input loop handles costs.
     def activate(self, key, expected_keys):
@@ -138,11 +138,11 @@ class GatePuzzle:
         self.snapshot()
         if nearby != self.sequence[len(self.entered)]:
             self.entered = []
-            return 'Wrong order. Sequence cleared; check the clue journal.'
+            return f'Wrong terminal. Start again at terminal {self.sequence[0]}. Tab: order.'
         self.entered.append(nearby)
         self.authorized = len(self.entered) == 3
         if self.authorized:
-            return 'Identity verified. Proceed to exit E.'
+            return 'All 3 terminals unlocked. Walk to E when ready to leave.'
         return f'Terminal {nearby} accepted ({len(self.entered)}/3).'
 
     # Find a terminal on or beside the player, returning None when none is within reach.
@@ -194,7 +194,7 @@ class GatePuzzle:
                 return 'F locked: the alarm feed now powers your rescue call.', consequence
             if self.radio == 'cut':
                 return 'F disconnected: alarm silent; O cannot call rescuers.', consequence
-            return '[E] Cut F: silence the alarm AND disable the rescue radio.', consequence
+            return 'Press E here to cut F: stop the alarm AND disable radio O.', consequence
         if self.near(RADIO):
             if self.radio == 'cut':
                 return 'O offline: cutting F also disconnected the rescue radio.', consequence
@@ -204,8 +204,75 @@ class GatePuzzle:
                 return 'O needs both crates on their plates before it can call rescue.', consequence
             if self.radio == 'sent':
                 return 'O transmitting: the rescue team has your coordinates.', consequence
-            return '[E] Use O: send your location and contact the rescue team.', consequence
-        return 'Rescue radio O: ' + self.radio.upper(), consequence
+            return 'Press E here to use O: send your location to rescuers.', consequence
+        if not self.powered:
+            task = 'Next: push box A onto a.' if self.bypass else 'Next: push box A onto a and box B onto b.'
+        elif not self.authorized:
+            task = f'Next: find terminal {self.sequence[len(self.entered)]} and press E beside it.'
+        else:
+            task = 'Gate unlocked. Visit O for rescue, or walk to exit E.'
+        return task, consequence
+
+
+# Explain one topic per page so help remains readable within the fixed viewport.
+def show_help(screen, clues, gate):
+    order = ' > '.join(map(str, gate.sequence))
+    pages = (
+        ('1/3 / MOVE THE BOXES', [
+            'Goal: open the doors, unlock 3 terminals, then walk to exit E.', '',
+            '@ is you. CAPITAL A/B are boxes. Small a/b are floor plates.',
+            'Stand beside a box. Walk INTO it to push it away from you.',
+            'You cannot pull a box. Press U if a push puts it in the wrong place.', '',
+            'Push A onto a. Ignore B and b.' if gate.bypass else 'Push A onto a AND B onto b.',
+            'Leave the required boxes on their plates to keep the doors open.',
+            'D is a closed door. / is an open door.',
+        ]),
+        ('2/3 / UNLOCK THE TERMINALS', [
+            'Use the numbered terminals in this order: ' + order, '',
+            'Stand ON or BESIDE a terminal, then press the E key.',
+            'Enter its numeric code. Each terminal has a DIFFERENT code.', '',
+            'Terminal 1: badge A + offset',
+            'Terminal 2: badge C - offset',
+            'Terminal 3: badge V + (2 x offset)', '',
+            'Tab opens notes: the ACCESS NOTES page lists badge numbers.',
+            'Badges are numbers from the drawer, NOT the boxes on this map.',
+            'A wrong code or wrong terminal order costs 1 emergency cell.',
+        ]),
+        ('3/3 / RADIO, ALARM AND EXIT', [
+            'O and F are map symbols. Stand nearby and press E to use them.', '',
+            'O = rescue radio. It sends your location to a rescue team.',
+            'It works only after room 3 is repaired AND both plates are pressed.',
+            'Calling rescue leads to an antenna challenge beyond the gate.', '',
+            'F = alarm switch. Using it stops the alarm but also disables O.',
+            'With room 3 repaired but no call, you escape via a scanner corridor.',
+            'If room 3 was skipped, the exit leads to a battery-powered shaft.', '',
+            'F and O are optional. Neither replaces the 3 terminal checks.',
+            'U undoes actions. Walking onto exit E locks in your escape route.',
+        ]),
+    )
+    page = 0
+    screen.timeout(-1)
+    while True:
+        title, messages = pages[page]
+        ready = frame(screen, 'GATE HELP / ' + title, clues,
+                      'Left/Right: page    Enter: next/close    H/Esc/Q: close')
+        if ready:
+            for y, message in enumerate(messages, 5):
+                line(screen, y, message)
+            screen.refresh()
+        key = screen.getch()
+        if key in (27, ord('q'), ord('Q')) or ready and key in (ord('h'), ord('H')):
+            return
+        if not ready:
+            continue
+        if key in (10, 13, curses.KEY_ENTER):
+            if page == len(pages) - 1:
+                return
+            page += 1
+        elif key == curses.KEY_RIGHT:
+            page = min(page + 1, len(pages) - 1)
+        elif key == curses.KEY_LEFT:
+            page = max(0, page - 1)
 
 
 # Handle this room and its input; write radio back to shared clues only after reaching the exit.
@@ -225,10 +292,9 @@ def main(screen, clues):
             sequence.append(numbers[colour])
         display_clues['sequence'] = tuple(sequence)
     gate = GatePuzzle(display_clues['sequence'], bypass)
-    message = 'Push A/B onto a/b. Boxes can be pushed, never pulled.'
+    message = 'Push A onto a and B onto b. H: step-by-step help.'
     if bypass:
-        message = 'Battery mode: push A onto a. Plate b is disconnected.'
-    hint = False
+        message = 'Push A onto a. Ignore B and b. H: step-by-step help.'
     screen.timeout(-1)
     while True:
         display_clues.update(clues)
@@ -266,19 +332,12 @@ def main(screen, clues):
             number = gate.terminal_nearby()
             context, consequence = gate.fixture_hint()
             if number is not None and not gate.near(ALARM) and not gate.near(RADIO):
-                context = f'[E] Terminal {number}: ' + FORMULAS[number]
+                context = f'Press E for terminal {number}. Code = badge ' + FORMULAS[number]
             line(screen, 18, context, curses.color_pair(1) | curses.A_BOLD)
             line(screen, 20, consequence)
             text(screen, 19, 5, message, curses.color_pair(2))
             if gate.near(ALARM) or gate.near(RADIO):
                 line(screen, 21, 'U: undo actions step by step. Crossing exit E commits this route.', curses.A_DIM)
-            elif hint:
-                if bypass:
-                    text(screen, 20, 5, 'Move below A and push it up to plate a.')
-                    text(screen, 21, 5, 'Only a needs power. Reverse drawer labels for terminal order.')
-                else:
-                    text(screen, 20, 5, 'A goes up to a. Move B down, then left to b.')
-                    text(screen, 21, 5, 'Keep both plates on; use the journal order and identity.')
             screen.refresh()
         key = screen.getch()
         if key in (27, ord('q'), ord('Q')):
@@ -299,7 +358,7 @@ def main(screen, clues):
             gate = GatePuzzle(display_clues['sequence'], bypass)
             message = 'Room reset. All earlier clues remain in the journal.'
         elif key in (ord('h'), ord('H')):
-            hint = not hint
+            show_help(screen, display_clues, gate)
         elif key in (ord('e'), ord('E')):
             result = gate.operate()
             if result is not None:
@@ -310,13 +369,15 @@ def main(screen, clues):
                 message = 'No device in reach. Move beside a numbered terminal, O or F.'
                 continue
             answer = read_command(screen, f'04 / TERMINAL {number} ACCESS', display_clues, [
-                'The engraved rule reads:', '',
-                FORMULAS[number], '',
-                'Use the drawer badges (Tab) and console offset.',
-                'Each terminal requires a different numeric code.',
-                'Use the terminal order in your clue journal.',
-                'Wrong code or order consumes one emergency cell.',
-            ], [['Tab shows badge numbers. Apply the engraved rule; do not enter the offset alone.']])
+                f'You are using terminal {number}. Enter a number, not a letter.', '',
+                'Code = badge ' + FORMULAS[number],
+                f'Badge A: {clues["badges"]["A"]}   C: {clues["badges"]["C"]}   V: {clues["badges"]["V"]}',
+                f'Offset from room 1: {clues["shift"]}', '',
+                'Terminal order: ' + ' > '.join(map(str, gate.sequence)),
+                'Badge letters refer to drawer numbers, not movable boxes.',
+                'A wrong code or wrong order costs 1 cell. Esc cancels for free.',
+            ], [['Replace the badge letter with its number, then do the calculation.',
+                 'For terminal 3, double the offset first, then add badge V.']])
             if answer is not None:
                 if gate.powered and not gate.authorized:
                     wrong_code = answer.strip() != str(keys[number])

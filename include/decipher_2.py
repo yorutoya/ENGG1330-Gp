@@ -1,5 +1,5 @@
-# Room 2: implement the numeric drawer puzzle directly, without importing the old lock2.1 script.
-"""Lock 2, replacing the old decipher_2 with the lock2.1 drawer puzzle."""
+# Room 2: decode a numeric drawer password and recover badges and circuit clues.
+"""Room 2: the numeric drawer puzzle and its shared clues."""
 from include.interface import read_command, notice
 from include.expedition import lose_cell
 
