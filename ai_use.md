@@ -6,7 +6,7 @@ If no group member used AI, no entries are needed. Otherwise add an entry for ea
 
 ## Entry
 
-- Member and date: Cao Zhiheng, Nov. 3, 2026
+- Member and date: Cao Zhiheng, Nov. 3rd, 2026
 - Tool and model/version, where available: GPT 6 Astra
 - Purpose: Brainstorming, Learning the Curse Library ，Detecting Running Environment; Generating Comments for group members and the teaching team to understand; Learning how to format README.md. 
 - Relevant prompts and outputs used, or retained transcript location:
