@@ -9,7 +9,7 @@ If no group member used AI, no entries are needed. Otherwise add an entry for ea
 - Member and date: Cao Zhiheng, Nov. 3rd, 2026
 - Tool and model/version, where available: GPT-6 Astra
 - Purpose: Brainstorming, Learning the Curse Library ，Detecting Running Environment; Generating Comments for group members and the teaching team to understand; Learning how to format README.md. 
-- Relevant prompts and outputs used, or retained transcript location:
+- Relevant prompts and outputs used, or retained transcript location: 1) Give a list of Curses library functions for my group to learn to use. 2) Write the Docker Environment and Testing Environment to README.md. 3) Make my comments more readable for other group members. 4) Tell me how to write formats like tables in README.md.
 - Files/materials affected: a) Comments generated: All .py files; b) Curses Reference: CURSES_REFERENCE.md c) Course Container Info and Local Verification Environment: README.md
 - What we kept, changed or rejected: Some inappropriate comments of the program. No modification to the code blocks.
 - How we checked it; tests and corrections: By reviewing the comments and change them to fit the code. No modification to the code blocks.
