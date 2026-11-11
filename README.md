@@ -14,12 +14,13 @@ A single-player terminal escape game for the ENGG1330 group project. Explore an 
 | Course container image | `engg1330-project:2026-v03` |
 | Container base | `python:3.13-slim-bookworm` (Python 3.13 / Debian Bookworm), pinned by SHA-256 digest |
 | Local verification environment | CPython 3.15.0 on macOS |
+| Docker verification | Verified in the supplied course container (`2026-v03`, Python 3.13 / Debian Bookworm) |
 
-The container details come from the supplied `project_docker/dockerfile` and `project_docker/compose.yaml`. The base image is pinned to `sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e`. Local checks used Python 3.15.0; execution inside the course container has not yet been verified.
+The container details come from the supplied `project_docker/dockerfile` and `project_docker/compose.yaml`. The base image is pinned to `sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e`. Local checks used Python 3.15.0. The project team has also verified execution in the supplied Docker course environment.
 
 ## Requirements and Running the Game
 
-- Python 3 with the `curses` module available. The current local environment uses CPython 3.15.0; other Python versions have not been verified here.
+- Python 3 with the `curses` module available. Verified environments are CPython 3.15.0 on macOS and Python 3.13 in the supplied Docker course container.
 - An interactive terminal with at least **80 columns by 24 rows** and support for curses colors and keyboard input.
 - A writable project directory for checkpoints and ending records.
 
@@ -40,7 +41,7 @@ python3 -c "import curses; print('curses import OK')"
 
 ### Running in the Course Container
 
-The game folder should be placed inside the provided course container's `project/` folder such that the entry point is `project_docker/project/ENGG1330-Gp/main.py`. Keep the `include/` folder adjacent to `main.py`.
+The game folder should be placed inside the provided course container's `project/` folder such that the entry point is `project_docker/project/ENGG1330-Gp1/main.py`. Keep the `include/` folder adjacent to `main.py`.
 
 With the course container up and running, open a terminal in the `project_docker/` folder and type the following commands:
 
@@ -125,11 +126,11 @@ The following checks were performed locally on CPython 3.15.0 while writing this
 
 - Ad hoc logic smoke checks for mirror decoding and command normalization, drawer decoding and answer validation, initial room accessibility, distinctness of the gate codes, all three ending conditions, fuse consumption and cell loss, checkpoint roundtrip, rejection of the invalid checkpoint, and successful execution of emergency shaft actions.
 
-These checks do not produce the save files. There is no currently committed test suite, and the above checks do not ensure that all interactive paths work in the course container.
+The local logic checks did not create save files. Separately, the project team has verified execution in the supplied Docker course container. There is currently no committed automated test suite.
 
 ### Manual Playtest Checklist
 
-The following checks need to be performed in the submission environment:
+The following checklist records expected gameplay behavior and can be reused for regression testing after changes:
 
 | Test | Expected behavior |
 | --- | --- |
