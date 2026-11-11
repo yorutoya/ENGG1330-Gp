@@ -119,7 +119,7 @@ class GatePuzzle:
         if self.powered:
             return 'Doors open. Keep the boxes in place. Use terminals 1, 2 and 3.'
         if self.bypass:
-            return 'Push box A onto plate a. Box B and plate b are not needed.'
+            return 'Battery power: use A on a. Plate b needs mains power from room 3.'
         return 'Push box A onto a and box B onto b. You cannot pull boxes.'
 
     # Check the nearby terminal code and order; wrong order clears progress, while the input loop handles costs.
@@ -223,7 +223,9 @@ def show_help(screen, clues, gate):
             '@ is you. CAPITAL A/B are boxes. Small a/b are floor plates.',
             'Stand beside a box. Walk INTO it to push it away from you.',
             'You cannot pull a box. Press U if a push puts it in the wrong place.', '',
-            'Push A onto a. Ignore B and b.' if gate.bypass else 'Push A onto a AND B onto b.',
+            'Battery power runs plate a only. Push box A onto a.' if gate.bypass
+            else 'Mains power needs BOTH plates: push A onto a and B onto b.',
+            'Plate b works after room 3 is repaired; it then needs box B.',
             'Leave the required boxes on their plates to keep the doors open.',
             'D is a closed door. / is an open door.',
         ]),
@@ -294,7 +296,7 @@ def main(screen, clues):
     gate = GatePuzzle(display_clues['sequence'], bypass)
     message = 'Push A onto a and B onto b. H: step-by-step help.'
     if bypass:
-        message = 'Push A onto a. Ignore B and b. H: step-by-step help.'
+        message = 'Battery powers only a. Plate b needs room 3 repaired. H: help.'
     screen.timeout(-1)
     while True:
         display_clues.update(clues)
