@@ -7,7 +7,7 @@ If no group member used AI, no entries are needed. Otherwise add an entry for ea
 ## Entry
 
 - Member and date: Cao Zhiheng, Nov. 3rd, 2026
-- Tool and model/version, where available: GPT 6 Astra
+- Tool and model/version, where available: GPT-6 Astra
 - Purpose: Brainstorming, Learning the Curse Library ，Detecting Running Environment; Generating Comments for group members and the teaching team to understand; Learning how to format README.md. 
 - Relevant prompts and outputs used, or retained transcript location:
 - Files/materials affected: a) Comments generated: All .py files; b) Curses Reference: CURSES_REFERENCE.md c) Course Container Info and Local Verification Environment: README.md
@@ -22,6 +22,7 @@ If no group member used AI, no entries are needed. Otherwise add an entry for ea
 - Files/materials affected: decipher_2.py
 - What we kept, changed or rejected: I changed my plain version of decipher_2(without curses) into a new curses version by relpacing input() with screen.getstr() and so on.
 - How we checked it; tests and corrections: I ran the decipher code alone and made sure it goes smoothly. 
+
 
 - Member and date: Ren Zhuoran, 5th Nov, 2026
 - Tool and model/version, where available: DeepSeek
