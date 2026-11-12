@@ -236,8 +236,8 @@ def show_help(screen, clues, gate):
             'Terminal 1: badge A + offset',
             'Terminal 2: badge C - offset',
             'Terminal 3: badge V + (2 x offset)', '',
-            'Tab opens notes: the ACCESS NOTES page lists badge numbers.',
-            'Badges are numbers from the drawer, NOT the boxes on this map.',
+            'Tab: BADGE CLUES explains how to decode the stamped numbers.',
+            'Decode each stamp, mirror the letters, then add their A1Z26 values.',
             'A wrong code or wrong terminal order costs 1 emergency cell.',
         ]),
         ('3/3 / RADIO, ALARM AND EXIT', [
@@ -301,7 +301,7 @@ def main(screen, clues):
     while True:
         display_clues.update(clues)
         ready = frame(screen, '04 / SECURITY INTERLOCK', display_clues,
-                      'Arrows: move   E: use   Tab: notes   U: undo   R: reset   H: hint   Q: back')
+                      'Arrows: move  E: use  Tab: notes  U: undo  R: reset  H: help  Q: back')
         if ready:
             required = 1 if bypass else 2
             plates = 0
@@ -370,16 +370,30 @@ def main(screen, clues):
             if number is None:
                 message = 'No device in reach. Move beside a numbered terminal, O or F.'
                 continue
+            badge = 'ACV'[number - 1]
+            evidence = (f'Badge {badge} stamp: ' + clues['badge_stamps'][badge]
+                        if 'badge_stamps' in clues else
+                        f'Badge {badge}: {clues["badges"][badge]}')
+            hints = [
+                ['First use the drawer rule on each stamped number.',
+                 'Subtract the room 1 offset. Add 26 if the result is below 1.',
+                 'Convert the results to letters with A=1 ... Z=26.'],
+                ['Now use the mirror alphabet from room 1 on those letters.',
+                 'A becomes Z, B becomes Y, and so on.'],
+                ['Add the final letters using A=1 ... Z=26: this is the badge.',
+                 'Example: final letters A B give 1+2=3. Your stamp may differ.',
+                 "Finally apply this terminal's formula to that badge total."],
+            ] if 'badge_stamps' in clues else [
+                ['Use the printed badge number in the terminal formula.']]
             answer = read_command(screen, f'04 / TERMINAL {number} ACCESS', display_clues, [
                 f'You are using terminal {number}. Enter a number, not a letter.', '',
                 'Code = badge ' + FORMULAS[number],
-                f'Badge A: {clues["badges"]["A"]}   C: {clues["badges"]["C"]}   V: {clues["badges"]["V"]}',
+                evidence,
                 f'Offset from room 1: {clues["shift"]}', '',
                 'Terminal order: ' + ' > '.join(map(str, gate.sequence)),
-                'Badge letters refer to drawer numbers, not movable boxes.',
+                'Tab: badge clues. F1: step-by-step decoding hints.',
                 'A wrong code or wrong order costs 1 cell. Esc cancels for free.',
-            ], [['Replace the badge letter with its number, then do the calculation.',
-                 'For terminal 3, double the offset first, then add badge V.']])
+            ], hints)
             if answer is not None:
                 if gate.powered and not gate.authorized:
                     wrong_code = answer.strip() != str(keys[number])

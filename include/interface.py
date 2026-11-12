@@ -77,11 +77,12 @@ def frame(screen, title, clues, controls):
     return True
 
 
-# Show two notebook pages in a separate input loop so navigation does not affect the puzzle.
+# Show notebook pages in a separate input loop so navigation does not affect the puzzle.
 def show_notes(screen, clues):
     """An on-demand notebook. Closing it returns to the unchanged room."""
     page = 0
-    titles = ('JOURNAL + EXPEDITION [1/2]', 'ACCESS NOTES [2/2]')
+    titles = ('JOURNAL + EXPEDITION [1/3]', 'ACCESS NOTES [2/3]',
+              'BADGE CLUES [3/3]')
     screen.timeout(-1)
     while True:
         ready = frame(screen, titles[page], clues,
@@ -124,14 +125,33 @@ def show_notes(screen, clues):
                 text(screen, 20, 47, 'No cells = run over.', curses.A_DIM)
             elif page == 1:
                 if 'badges' in clues:
-                    for index, (name, value) in enumerate(clues['badges'].items()):
-                        line(screen, 6 + index * 2, f'Badge {name}     {value}', curses.color_pair(2))
+                    if 'badge_stamps' in clues:
+                        line(screen, 6, 'Badge values are hidden in the stamped numbers.')
+                        line(screen, 8, 'Press Tab for BADGE CLUES and decode A, C and V.')
+                        line(screen, 10, 'Then use the recovered totals in these terminal rules:')
+                    else:
+                        for index, (name, value) in enumerate(clues['badges'].items()):
+                            line(screen, 6 + index * 2, f'Badge {name}     {value}', curses.color_pair(2))
                     line(screen, 13, '1 : A + offset')
                     line(screen, 15, '2 : C - offset')
                     line(screen, 17, '3 : V + 2 x offset')
                     line(screen, 19, 'Each terminal has its own rule. Use the console offset.')
                 else:
                     line(screen, 7, 'Open the drawer to recover its numbered badges.')
+            elif page == 2:
+                if 'badge_stamps' in clues:
+                    for index, (name, stamp) in enumerate(clues['badge_stamps'].items()):
+                        line(screen, 5 + index * 2, f'Badge {name}: {stamp}', curses.color_pair(2))
+                    line(screen, 12, f'1. Like OPEN: subtract offset {clues["shift"]} from each number.')
+                    line(screen, 13, '   Wrap into 1..26, then read A=1, B=2, ... Z=26.')
+                    line(screen, 15, '2. Like room 1: mirror each letter (A<->Z, B<->Y).')
+                    line(screen, 17, '3. Add the mirrored letters using A=1 ... Z=26.')
+                    line(screen, 19, 'That total is the badge value, not the terminal code.')
+                    line(screen, 20, 'Example: final letters A B give a badge value of 1+2=3.')
+                else:
+                    line(screen, 7, 'Open the drawer to discover badge clues.')
+                    if 'badges' in clues:
+                        line(screen, 9, 'This older checkpoint has plain badges in ACCESS NOTES.')
             screen.refresh()
         key = screen.getch()
         if key in (27, ord('q'), ord('Q')) or ready and key in (10, 13, curses.KEY_ENTER):
@@ -139,9 +159,9 @@ def show_notes(screen, clues):
         if not ready:
             continue
         if key in (9, curses.KEY_RIGHT, curses.KEY_DOWN):
-            page = (page + 1) % 2
+            page = (page + 1) % len(titles)
         elif key in (curses.KEY_LEFT, curses.KEY_UP):
-            page = (page - 1) % 2
+            page = (page - 1) % len(titles)
 
 
 # Read up to 45 printable ASCII characters with editing and hints; return None on cancellation.

@@ -32,7 +32,8 @@ def encode(clues, solved, selected):
     # map selection, radio state, ending type, escaped flag, and exit challenge state.
     # A dash marks absent data; parsing converts values and never executes file contents.
     return '\n'.join((
-        'UNDERGROUND SAVE 1', str(clues['seed']), str(clues['cells']),
+        'UNDERGROUND SAVE 1' if clues.get('plain_badges') else 'UNDERGROUND SAVE 2',
+        str(clues['seed']), str(clues['cells']),
         str(clues['bonus_charge']), str(int(clues['fuse'])),
         '|'.join(clues['modules']) or '-',
         ''.join(str(int(done)) for done in solved), str(selected),
@@ -44,7 +45,7 @@ def encode(clues, solved, selected):
 # Validate fields and room prerequisites, then rebuild and return clues, solved and selected.
 def decode(contents):
     fields = contents.splitlines()
-    if len(fields) != 12 or fields[0] != 'UNDERGROUND SAVE 1':
+    if len(fields) != 12 or fields[0] not in ('UNDERGROUND SAVE 1', 'UNDERGROUND SAVE 2'):
         raise ValueError('Unsupported or incomplete checkpoint')
     seed = number(fields[1], 0, 7999)
     clues = new_run(seed)
@@ -65,7 +66,14 @@ def decode(contents):
         clues['shift'] = 7
     if solved[1]:
         clues['order'] = decipher_2.make_order(seed)
-        clues['badges'] = decipher_2.make_badges(seed)
+        if fields[0] == 'UNDERGROUND SAVE 1':
+            # Preserve the badge numbers already issued by an older checkpoint.
+            clues['plain_badges'] = True
+            clues['badges'] = {'A': 10 + seed % 20, 'C': 50 + (seed // 20) % 20,
+                               'V': 80 + (seed // 400) % 20}
+        else:
+            clues['badges'] = decipher_2.make_badges(seed)
+            clues['badge_stamps'] = decipher_2.make_badge_stamps(seed, clues['shift'])
     if solved[2]:
         clues['sequence'] = power_sequence(clues)
     if fields[8] not in ('-', 'idle', 'sent', 'cut'):

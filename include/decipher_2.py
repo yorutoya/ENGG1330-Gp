@@ -2,13 +2,28 @@
 """Room 2: the numeric drawer puzzle and its shared clues."""
 from include.interface import read_command, notice
 from include.expedition import lose_cell
+from include.decipher_1 import mirror
 
 
-# Generate three seeded badge numbers in separate ranges for the gate terminal formulas.
+# Vary the hidden letters while keeping the three terminal-code ranges separate.
+def badge_letters(seed):
+    return {
+        'A': ''.join(chr(65 + (seed // divisor) % 10) for divisor in (1, 10)),
+        'C': ''.join(chr(84 + (seed // divisor) % 7) for divisor in (3, 21)),
+        'V': ''.join(chr(84 + (seed // divisor) % 7) for divisor in (7, 49, 343)),
+    }
+
+
+# A badge's value is the sum of its recovered letters, using A=1 through Z=26.
 def make_badges(seed):
-    # Three separate ranges keep all derived terminal codes distinct.
-    return {'A': 10 + seed % 20, 'C': 50 + (seed // 20) % 20,
-            'V': 80 + (seed // 400) % 20}
+    return {name: sum(ord(c) - 64 for c in letters)
+            for name, letters in badge_letters(seed).items()}
+
+
+# Encode the mirrored letters using the same offset rule as the drawer password.
+def make_badge_stamps(seed, shift=7):
+    return {name: ' - '.join(map(str, encode_word(mirror(letters), shift)))
+            for name, letters in badge_letters(seed).items()}
 
 
 # Select one of three seeded colour orders for the circuit to repeat.
@@ -56,10 +71,13 @@ def main(screen, clues):
             return False
         if check_answer(answer):
             clues['order'] = make_order(clues.get('seed', 0))
-            clues['badges'] = make_badges(clues.get('seed', hash('underground-access') % 8000))
+            clues['badges'] = make_badges(clues.get('seed', 0))
+            clues['badge_stamps'] = make_badge_stamps(clues.get('seed', 0), clues['shift'])
             notice(screen, '02 / DRAWER OPENED', clues, [
                 'Inside: a circuit key, fuse diagram and badges.',
-                'Badge numbers are saved in ACCESS NOTES (Tab).',
+                'The badges carry encrypted numbers, not their final values.',
+                'Tab: BADGE CLUES records the stamps and decoding instructions.',
+                'Decode like OPEN, mirror like room 1, then add letter values.',
                 'Fuse routing: ' + ' > '.join(clues['order']),
                 'Repeat this order twice to restore the power.', '',
                 'Wrong-colour nodes will short the circuit.',

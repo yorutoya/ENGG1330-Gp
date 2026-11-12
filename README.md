@@ -57,13 +57,33 @@ The goal is to escape the facility before the emergency cells are depleted. The 
 ### Rooms and Progression
 
 1. **Mirror Console:** decode the mirror alphabet message and enter the full English command. This action enables emergency lighting and gives the encoder offset.
-2. **Locked Drawer:** decode the password using the offset from the previous room and obtain badge numbers, circuit colors in an order, and access to the remaining two rooms.
+2. **Locked Drawer:** decode the password using the offset from the previous room and obtain encrypted badge stamps, circuit colors in an order, and access to the remaining two rooms.
 3. **Energy Circuit (optional):** guide the energy snake and collect six nodes using the obtained three-color order, repeating twice. Do not collide with walls, the snake's body, and incorrect-color nodes. Every move consumes the charge from the energy snake. This room restores mains power and reveals the terminal sequence on the gate.
 4. **Security Interlock:** push crates onto the matching pressure plates and compute the three terminal codes from the badges and the offset, entering them in the right order. Crates can only be pushed, not pulled. In the case where room 3 was skipped, the backup battery powers only the `a` plate: push box `A` on it. The `b` plate stays inactive under this condition. Otherwise, both plates are required: box `A` must be placed on `a` and box `B` on `b`. If the battery was enabled, the terminal sequence can be computed by converting the circuit colors from the drawer to numbers (`A=1`, `C=2`, `V=3`) and then reversing the resulting order.
 
-Press **H** in the security room to get three help screens: crate manipulation instructions, instructions for terminal codes computation, and radio usage/activation. The terminal input screen provides the needed badge numbers, offset, and the order of terminals. Badge A is the number from the drawer, box A is a movable object on the map.
+Press **H** in the security room to get three help screens: crate manipulation instructions, instructions for terminal codes computation, and radio usage/activation. The terminal input screen provides the relevant badge stamp, offset, and terminal order. Tab opens BADGE CLUES; F1 gives progressive decoding hints. Badge A is an encrypted label from the drawer; box A is a movable object on the map.
 
 At the gate, the rescue radio (`O`) and the shared radio/alarm feed (`F`) can also be used. The former requires mains power and two plates, while the latter allows communication. Passing the gate completes the route selection, which locks the unused rooms.
+
+### Recovering Badge Values
+
+The A/C/V badges reuse both earlier ciphers. Each expedition has different
+stamped numbers, while the decoding rules stay the same:
+
+1. Decode each number like the drawer password: subtract the console offset,
+   wrap into 1–26, and convert to letters using A=1 through Z=26.
+2. Mirror those letters using the console alphabet: A ↔ Z, B ↔ Y, and so on.
+3. Add the mirrored letters' A1Z26 values to get that badge's value.
+4. Use that value in the appropriate terminal formula. The badge value and
+   terminal code are different numbers.
+
+For example, with offset 7, a sample stamp `7 - 6` decodes to Z Y, mirrors
+to A B, and gives a badge value of 1+2=3. This illustrates the rule; it is
+not a fixed answer to the current expedition. Notes preserve all stamps
+and instructions, and viewing hints does not cost cells.
+
+New checkpoints preserve these clues. Older checkpoints with issued plain
+badge numbers retain those numbers and show them in ACCESS NOTES.
 
 ### Cells, Conditions, and Rewards
 
@@ -162,7 +182,9 @@ The following checklist records expected gameplay behavior and can be reused for
 ### Shared Work
 
 - **Planning and game design:** Cao Zhiheng, Ren Zhuoran, Ho Shu To.
-- **Integration and testing:** Cao Zhiheng.
+- **Integration and testing:** Cao Zhiheng, Ren Zhuoran, Ho Shu To.
+- **1-minute Trailer** Ho Shu To
+- **5-minute Demo** Ren Zhuoran
 - **Documentation and submission:** Code Zip and README: Cao Zhiheng.
 
 ## Sources and License

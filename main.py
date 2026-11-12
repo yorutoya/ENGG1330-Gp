@@ -73,6 +73,35 @@ def show_ending(screen, clues):
     notice(screen, 'ENDING / ' + result, clues, messages)
 
 
+# Explain the setting and the shared failure budget before the first map screen.
+def show_intro(screen, clues):
+    notice(screen, 'UNDERGROUND / EMERGENCY EVACUATION', clues, [
+        'You wake inside an underground facility after a power failure.',
+        'The corridors are dark, and the security gate is locked.',
+        'Recover clues, restore systems, and find a way to the surface.', '',
+        'Your emergency pack starts with 3 cells.',
+        'Wrong answers and failed challenges can cost a cell.',
+        'At 0 cells, this expedition ends and you cannot enter any rooms.',
+        'You must start a new expedition or load an earlier checkpoint.', '',
+        'On the map: N then Y starts again; L loads a saved checkpoint.',
+        'Press P on the map to save. Quitting does not save automatically.',
+    ])
+
+
+# Use the same restart instructions for room failures and final-challenge failures.
+def show_run_over(screen, clues):
+    notice(screen, 'GAME OVER / NO CELLS LEFT', clues, [
+        'Your emergency cells have run out. This expedition has ended.',
+        'All rooms are now unavailable.', '',
+        'Press Enter to return to the map.',
+        'Then press N, followed by Y, to restart with 3 cells.',
+        'You can also press L on the map to load an earlier checkpoint.', '',
+        'A new expedition resets rooms, clues, and modules.',
+        'Your collected endings are kept.',
+    ])
+    return 'GAME OVER. N then Y: restart with 3 cells. L: load. Q: quit.'
+
+
 # Run the exit challenge, record a completed ending and reveal the story when all three are collected.
 def visit_exit(screen, clues, collection=None):
     # The gate fixes the branch; returning to the map cannot choose another ending.
@@ -89,11 +118,7 @@ def visit_exit(screen, clues, collection=None):
             return 'All records recovered. [V] Archive replays the hidden transmission.'
         return 'EXPEDITION COMPLETE. Start again to explore the facility.'
     if clues.get('cells', 3) <= 0:
-        notice(screen, 'EXPEDITION LOST', clues, [
-            'Your emergency cells are exhausted.',
-            'The last passage remains sealed. Start a new expedition.',
-        ])
-        return 'RUN OVER. Start a new expedition to try again.'
+        return show_run_over(screen, clues)
     return 'Exit passage unfinished. Select the gate to resume where you left off.'
 
 
@@ -180,6 +205,7 @@ def main(screen):
     solved = [False] * 4
     selected = 0
     message = 'Start at the mirror console to restore emergency lighting.'
+    show_intro(screen, clues)
     while True:
         screen.timeout(-1)
         controls = 'Arrows: select  1-4: room  Enter: open  Tab: notes  N: new  Q: quit'
@@ -231,6 +257,9 @@ def main(screen):
                     if screen.getch() in (ord('y'), ord('Y')):
                         clues, solved, selected = checkpoint
                         message = 'Checkpoint loaded. Continue your expedition.'
+                        if clues.get('cells', 3) <= 0:
+                            selected = 4
+                            message = show_run_over(screen, clues)
                         if clues.get('escaped'):
                             if collection.record(clues['finale_kind']):
                                 archive.show_story(screen, clues)
@@ -259,7 +288,9 @@ def main(screen):
                     selected = 0
                     message = 'New expedition. Start with the mirror console.'
             elif not available(selected, solved, clues):
-                message = 'This room is unavailable. Check the earlier systems.'
+                message = ('No cells left. Press N then Y to start a new expedition.'
+                           if clues.get('cells', 3) <= 0 else
+                           'This room is unavailable. Check the earlier systems.')
             elif solved[selected]:
                 if selected == 3:
                     message = visit_exit(screen, clues, collection)
@@ -285,14 +316,8 @@ def main(screen):
                 else:
                     selected += 1
             elif clues.get('cells', 3) <= 0:
-                notice(screen, 'EXPEDITION LOST', clues, [
-                    'Your emergency cells are exhausted.',
-                    'The facility seals its remaining systems.', '',
-                    'Start a new expedition with a new sector and cache.',
-                    'No modules or completed rooms carry into a new run.',
-                ])
+                message = show_run_over(screen, clues)
                 selected = 4
-                message = 'RUN OVER. Start a new expedition to try again.'
             else:
                 message = 'Back at control. Completed systems and clues are kept.'
 
