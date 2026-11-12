@@ -185,7 +185,6 @@ The following checklist records expected gameplay behavior and can be reused for
 - **Integration and testing:** Cao Zhiheng, Ren Zhuoran, Ho Shu To.
 - **1-minute Trailer:** Ho Shu To.
 - **5-minute Demo:** Ren Zhuoran.
-- **Submission of Program ZIP to Moodle:** Cao Zhiheng.
 
 ## Sources and License
 
