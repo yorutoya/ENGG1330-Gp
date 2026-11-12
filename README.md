@@ -183,9 +183,9 @@ The following checklist records expected gameplay behavior and can be reused for
 
 - **Planning and game design:** Cao Zhiheng, Ren Zhuoran, Ho Shu To.
 - **Integration and testing:** Cao Zhiheng, Ren Zhuoran, Ho Shu To.
-- **1-minute Trailer** Ho Shu To
-- **5-minute Demo** Ren Zhuoran
-- **Documentation and submission:** Code Zip and README: Cao Zhiheng.
+- **1-minute Trailer:** Ho Shu To.
+- **5-minute Demo:** Ren Zhuoran.
+- **Submission of Program ZIP to Moodle:** Cao Zhiheng.
 
 ## Sources and License
 
