@@ -176,15 +176,13 @@ The following checklist records expected gameplay behavior and can be reused for
 | Member name | Main responsibilities | Specific work completed | Related files or deliverables |
 | --- | --- | --- | --- |
 | Cao Zhiheng | Adapt Single Programs to the project and Construct the Interface | Design Decipher 3, 4 and the endings. Developed most game structure. | archive.py, decipher_3.py, decipher_4.py, expedition.py, finale.py, interface.py, savegame.py, CURSES_REFERENCE.md, main.py, README.md |
-| Ren Zhuoran | Decipher 2 | Designed Decipher 2 and provided the prototype | decipher_2.py |
-| Ho Shu To | Decipher 1 | Designed Decipher 1 and provided the prototype | decipher_1.py |
+| Ren Zhuoran | Decipher 2 | Designed Decipher 2 and provided the prototype | decipher_2.py, 5-minute demo video. |
+| Ho Shu To | Decipher 1 | Designed Decipher 1 and provided the prototype | decipher_1.py, 1-minute trailer.|
 
 ### Shared Work
 
 - **Planning and game design:** Cao Zhiheng, Ren Zhuoran, Ho Shu To.
 - **Integration and testing:** Cao Zhiheng, Ren Zhuoran, Ho Shu To.
-- **1-minute Trailer:** Ho Shu To.
-- **5-minute Demo:** Ren Zhuoran.
 
 ## Sources and License
 
